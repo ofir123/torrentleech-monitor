@@ -8,12 +8,10 @@ EMAILS_LIST = ['example@email.com']
 # The update message subject.
 SUBJECT = 'Your daily TV update!'
 # The update message intro.
-MESSAGE = 'Hi,\r\n Your daily TV update is here.\r\nEnjoy!'
+MESSAGE = 'Hi,\r\nYour daily TV update is here.\r\nEnjoy!'
 
 # General settings.
 
-# Show upcoming seasons in the update message.
-SHOW_UPCOMING = True
 # Skip shows with these statuses.
 STATUSES_BLACK_LIST = ['ended']
 # Log file path. If None, no log file will be created.
