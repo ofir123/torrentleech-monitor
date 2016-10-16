@@ -87,3 +87,9 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Settings files.
+tvdb_monitor/settings.py
+tvdb_monitor/shows.py
+# State file.
+tvdb_monitor/last_state.json

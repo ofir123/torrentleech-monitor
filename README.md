@@ -4,7 +4,6 @@ TVDB Monitor
 Follow all of your favorite TV shows easily, with Python!
 
 TVDB Monitor keeps watch on all of your shows by querying the TVDB database and tell you about via E-Mail.  
-It'll even tell you about upcoming seasons, so you'll never be caught off-guard.  
 Every scan is saved in a little local JSON file, and updates are sent on changes since the last scan.
 
 Usage
