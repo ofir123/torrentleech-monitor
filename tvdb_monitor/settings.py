@@ -10,8 +10,23 @@ SUBJECT = 'Your daily TV update!'
 # The update message intro.
 MESSAGE = 'Hi,\r\nYour daily TV update is here.\r\nEnjoy!'
 
+# TorrentLeech settings.
+
+# TorrentLeech account details to download with.
+TORRENTLEECH_USERNAME = 'username'
+TORRENTLEECH_PASSWORD = 'password'
+
 # General settings.
 
+# If True, E-Mail reports will be sent.
+SHOULD_SEND_REPORT = True
+# If True, new episode torrents will be downloaded from TorrentLeech.
+SHOULD_DOWNLOAD_720_TORRENTS = True
+SHOULD_DOWNLOAD_1080_TORRENTS = True
+# Torrents for episodes older than this days number will not be downloaded.
+MAXIMUM_TORRENT_DAYS = 2
+# The directory to save downloaded torrent files in.
+TORRENTS_DIRECTORY = r'C:\Temp'
 # Skip shows with these statuses.
 STATUSES_BLACK_LIST = ['ended']
 # Log file path. If None, no log file will be created.
