@@ -177,6 +177,7 @@ def download(new_state):
     :param new_state: The new episodes state map.
     """
     logger.info('Downloading new episode torrents...')
+    statuses_black_list = [status.lower() for status in STATUSES_BLACK_LIST]
     torrent_files = []
     now = datetime.datetime.now()
     qualities_list = []
@@ -194,18 +195,23 @@ def download(new_state):
             'login': 'submit'
         })
         for show_name, last_episode_info in new_state.items():
+            # Skip shows with black-listed statuses.
+            if last_episode_info['status'] in statuses_black_list:
+                continue
+            season = last_episode_info['season']
+            episode = last_episode_info['episode']
+            air_date = last_episode_info['date']
             # If the last episode is relevant (from the last 2 days), download it.
-            if (now - datetime.datetime.strptime(last_episode_info['date'], '%Y-%m-%d')).days <= MAXIMUM_TORRENT_DAYS:
-                logger.info('Checking show: {}'.format(show_name))
-                show = new_state[show_name]
-                season = last_episode_info['season']
-                episode = last_episode_info['episode']
+            logger.info('Checking show: {} (Season - {}, Episode - {}, Date - {})'.format(
+                show_name, season, episode, air_date))
+            if (now - datetime.datetime.strptime(air_date, '%Y-%m-%d')).days <= MAXIMUM_TORRENT_DAYS:
                 for quality in qualities_list:
                     # Calculate free space in MBs.
                     free_space = shutil.disk_usage(TORRENTS_DIRECTORY).free / 1000 / 1000 - MINIMUM_FREE_SPACE
                     # Skip if already downloaded.
-                    if show['{}_torrent_downloaded'.format(quality)]:
+                    if last_episode_info['{}_torrent_downloaded'.format(quality)]:
                         continue
+                    logger.debug('Querying TorrentLeech...')
                     response = session.get(
                         TORRENTLEECH_BASE_URL + '/torrents/browse/index/query/{}+s{:02d}e{:02d}+{}/newfilter/2/'
                         'facets/category%253ATV'.format(show_name.replace(' ', '%20'), season, episode, quality))
@@ -238,7 +244,7 @@ def download(new_state):
                                     result_path = os.path.join(TORRENTS_DIRECTORY, file_name + '.torrent')
                                     open(result_path, 'wb').write(torrent_response.content)
                                     torrent_files.append(result_path)
-                                    show['{}_torrent_downloaded'.format(quality)] = True
+                                    last_episode_info['{}_torrent_downloaded'.format(quality)] = True
                                     break
     return torrent_files
 
