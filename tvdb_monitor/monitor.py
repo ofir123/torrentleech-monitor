@@ -2,19 +2,20 @@ import datetime
 import smtplib
 import sys
 import os
-import requests
+import shutil
 
 from bs4 import BeautifulSoup
 from guessit import guessit
 import logbook
 import tvdb_api
 from tvdb_exceptions import tvdb_error, tvdb_shownotfound
+import requests
 import ujson
 
 from tvdb_monitor.settings import LOG_FILE_PATH, JSON_FILE_PATH, GMAIL_USERNAME, GMAIL_PASSWORD, EMAILS_LIST, \
     SUBJECT, MESSAGE, STATUSES_BLACK_LIST, SHOULD_SEND_REPORT, SHOULD_DOWNLOAD_720_TORRENTS, \
     SHOULD_DOWNLOAD_1080_TORRENTS, TORRENTLEECH_USERNAME, TORRENTLEECH_PASSWORD, TORRENTS_DIRECTORY, \
-    MAXIMUM_TORRENT_DAYS
+    MAXIMUM_TORRENT_DAYS, MINIMUM_FREE_SPACE
 from tvdb_monitor.shows import SHOWS_LIST
 
 NOT_FOUND_STATUS = 'not found'
@@ -200,6 +201,8 @@ def download(new_state):
                 season = last_episode_info['season']
                 episode = last_episode_info['episode']
                 for quality in qualities_list:
+                    # Calculate free space in MBs.
+                    free_space = shutil.disk_usage(TORRENTS_DIRECTORY).free / 1000 / 1000 - MINIMUM_FREE_SPACE
                     # Skip if already downloaded.
                     if show['{}_torrent_downloaded'.format(quality)]:
                         continue
@@ -211,13 +214,23 @@ def download(new_state):
                         parsed_response = BeautifulSoup(response.content, 'html.parser')
                         table = parsed_response.find(id='torrenttable')
                         results_list = [t.find('a')['href'] for t in table.find_all('td', 'quickdownload')]
-                        for result in results_list:
+                        sizes_list = [t.string for t in table.find_all('td') if t.string and
+                                      ('GB' in t.string or 'MB' in t.string)]
+                        for index, result in enumerate(results_list):
                             file_name = result.split('/')[-1]
                             logger.debug('Found possible torrent: {}'.format(file_name))
                             # Verify with guessit.
                             guess = guessit(file_name)
                             if guess['title'].lower() == show_name and guess['season'] == season and \
                                     guess['episode'] == episode and guess['screen_size'] == quality:
+                                # Make sure we have enough space (with a margin) for this file.
+                                file_size_parts = sizes_list[index].split(' ')
+                                file_size = float(file_size_parts[0]) * (1 if file_size_parts[1] == 'MB' else 1000)
+                                logger.debug('File size: {}. Free space: {}'.format(file_size, free_space))
+                                if file_size >= free_space:
+                                    logger.info('Not enough free space ({}). Stopping!'.format(free_space))
+                                    break
+                                # Download it!
                                 torrent_response = session.get(TORRENTLEECH_BASE_URL + result)
                                 if torrent_response.status_code == 200 and torrent_response.content:
                                     # Success! Save the new torrent file and update the state.
@@ -225,7 +238,7 @@ def download(new_state):
                                     result_path = os.path.join(TORRENTS_DIRECTORY, file_name + '.torrent')
                                     open(result_path, 'wb').write(torrent_response.content)
                                     torrent_files.append(result_path)
-                                    show['{}_torrent_download'.format(quality)] = True
+                                    show['{}_torrent_downloaded'.format(quality)] = True
                                     break
     return torrent_files
 
