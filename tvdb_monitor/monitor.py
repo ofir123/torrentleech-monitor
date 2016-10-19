@@ -211,7 +211,7 @@ def download(new_state):
                     # Skip if already downloaded.
                     if last_episode_info['{}_torrent_downloaded'.format(quality)]:
                         continue
-                    logger.debug('Querying TorrentLeech...')
+                    logger.info('Querying TorrentLeech...')
                     response = session.get(
                         TORRENTLEECH_BASE_URL + '/torrents/browse/index/query/{}+s{:02d}e{:02d}+{}/newfilter/2/'
                         'facets/category%253ATV'.format(show_name.replace(' ', '%20'), season, episode, quality))
