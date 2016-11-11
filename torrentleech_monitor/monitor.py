@@ -309,7 +309,7 @@ def download(last_episodes_map, session):
                             # Check free space.
                             free_space = shutil.disk_usage(TORRENTS_DIRECTORY).free / 1000 / 1000 - \
                                          MINIMUM_FREE_SPACE
-                            file_size = torrent_info['file_size']
+                            file_size = torrent_info['size']
                             logger.debug('File size: {}. Free space: {}'.format(file_size, free_space))
                             if file_size >= free_space:
                                 logger.info('Not enough free space ({}). Stopping!'.format(free_space))
