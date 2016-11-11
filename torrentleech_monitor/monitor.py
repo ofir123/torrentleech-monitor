@@ -76,27 +76,28 @@ def _get_torrents(show_name, season_number, episode_number, session):
             # Scrape that shit!
             parsed_response = BeautifulSoup(response.content, 'html.parser')
             table = parsed_response.find(id='torrenttable')
-            results_list = [t.find('a')['href'] for t in table.find_all('td', 'quickdownload')]
-            sizes_list = [t.string for t in table.find_all('td') if t.string and
-                          ('GB' in t.string or 'MB' in t.string)]
-            for index, result in enumerate(results_list):
-                file_name = result.split('/')[-1]
-                logger.debug('Found possible torrent: {}'.format(file_name))
-                # Verify with guessit.
-                guess = guessit(file_name)
-                if guess['title'].lower() == show_name and guess['season'] == season_number and \
-                        guess['episode'] == episode_number and guess['screen_size'] == quality:
-                    # Calculate file size.
-                    file_size_parts = sizes_list[index].split(' ')
-                    file_size = float(file_size_parts[0]) * (1 if file_size_parts[1] == 'MB' else 1000)
-                    # Add to map and move on to next quality.
-                    torrents_map[quality] = {
-                        'size': file_size,
-                        'url': TORRENTLEECH_BASE_URL + result,
-                        'downloaded': False
-                    }
-                    logger.info('Found torrent for {} quality (size: {})'.format(quality, file_size))
-                    break
+            if table:
+                results_list = [t.find('a')['href'] for t in table.find_all('td', 'quickdownload')]
+                sizes_list = [t.string for t in table.find_all('td') if t.string and
+                              ('GB' in t.string or 'MB' in t.string)]
+                for index, result in enumerate(results_list):
+                    file_name = result.split('/')[-1]
+                    logger.debug('Found possible torrent: {}'.format(file_name))
+                    # Verify with guessit.
+                    guess = guessit(file_name)
+                    if guess['title'].lower() == show_name and guess['season'] == season_number and \
+                            guess['episode'] == episode_number and guess['screen_size'] == quality:
+                        # Calculate file size.
+                        file_size_parts = sizes_list[index].split(' ')
+                        file_size = float(file_size_parts[0]) * (1 if file_size_parts[1] == 'MB' else 1000)
+                        # Add to map and move on to next quality.
+                        torrents_map[quality] = {
+                            'size': file_size,
+                            'url': TORRENTLEECH_BASE_URL + result,
+                            'downloaded': False
+                        }
+                        logger.info('Found torrent for {} quality (size: {})'.format(quality, file_size))
+                        break
     return torrents_map
 
 
