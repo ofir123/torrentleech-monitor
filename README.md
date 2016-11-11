@@ -1,10 +1,12 @@
-TVDB Monitor
+TorrentLeech Monitor
 ============
 
 Follow all of your favorite TV shows easily, with Python!
 
-TVDB Monitor keeps watch on all of your shows by querying the TVDB database and tell you about via E-Mail.  
-Every scan is saved in a little local JSON file, and updates are sent on changes since the last scan.
+TorrentLeech Monitor keeps watch on all of your shows by querying the TVDB database and tell you about it via E-Mail.
+
+Every scan is saved in a little local JSON file, and updates are sent on available new episodes since the last scan.
+
 Each scan result can then be downloaded from TorrentLeech, to automate the process.
 
 Usage
@@ -15,11 +17,11 @@ Install the script as follows:
 
 Edit the shows file with your preferred shows:
 
-	$ vim tvdb_monitor/shows.py
+	$ vim torrentleech_monitor/shows.py
 	
 And set your account and E-Mail address in the settings file:
 
-    $ vim tvdb_monitor/settings.py
+    $ vim torrentleech_monitor/settings.py
 
 Notice that you have to set on the "less secure apps" option in the selected GMail account.  
 You can do it easily from here: https://www.google.com/settings/security/lesssecureapps
@@ -38,4 +40,4 @@ The easiest way to configure automatic monitoring, is by using crontab:
 
 There, add the following line, to get show updates every day at 8 PM (or any other hour you like):
 
-    0 20 * * * python3 <TVDB_MONITOR_SCRIPT_PATH>
+    0 20 * * * python3 <TORRENTLEECH_MONITOR_SCRIPT_PATH>
