@@ -67,11 +67,13 @@ def _get_torrents(show_name, season_number, episode_number, session):
     """
     torrents_map = dict()
     logger.info('Searching torrents for {} - s{:02d}e{:02d}'.format(show_name, season_number, episode_number))
+    # slugify a bit - URLs and guessit get sensitive about this stuff.
+    show_name = show_name.replace('\'', '').replace('.', ' ')
     for quality in QUALITIES_LIST:
         response = session.get(
             TORRENTLEECH_BASE_URL + '/torrents/browse/index/query/{}+s{:02d}e{:02d}+{}/'
-                                    'facets/category%253ATV'.format(show_name.replace(' ', '+'), season_number,
-                                                                    episode_number, quality))
+                                    'facets/category%253ATV'.format(show_name.replace('\'', ''),
+                                                                    season_number, episode_number, quality))
         if response.status_code == 200:
             # Scrape that shit!
             parsed_response = BeautifulSoup(response.content, 'html.parser')
