@@ -191,9 +191,12 @@ def check_shows(last_state, session):
                 # No need to check anything if status is black-listed.
                 if status not in statuses_black_list:
                     last_episode_info = _get_last_available_episode(show, show_name, show_last_state, session)
-                    logger.info('{} last available episode is: S{:02d}E{:02d} (aired: {})'.format(
-                        show_name, last_episode_info['season'], last_episode_info['episode'],
-                        last_episode_info['air_date']))
+                    if last_episode_info:
+                        logger.info('{} last available episode is: S{:02d}E{:02d} (aired: {})'.format(
+                            show_name, last_episode_info['season'], last_episode_info['episode'],
+                            last_episode_info['air_date']))
+                    else:
+                        logger.info('No available episodes yet for {}...'.format(show_name))
                 else:
                     logger.info('{} status is black-listed ({}). Skipping...'.format(show_name, status))
                     continue
