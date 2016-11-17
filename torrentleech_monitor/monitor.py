@@ -139,7 +139,7 @@ def _get_last_available_episode(show, show_name, show_last_state, session):
     while not last_episode_air_time or last_episode_air_time > today or len(torrents_map) == 0:
         last_episode_number -= 1
         # If reached beginning of season, go back one season and start from its last episode.
-        if last_episode_number == 0:
+        if last_episode_number <= 0:
             last_season_number -= 1
             # If no season was yet aired, stop.
             if last_season_number == 0:
