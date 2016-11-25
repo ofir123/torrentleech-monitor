@@ -55,6 +55,13 @@ def load_last_state(file_path):
     return ujson.load(open(file_path, 'r', encoding='UTF-8'))
 
 
+def uglify_show_name(show_name):
+    """
+    Returns an uglified string for the given show name.
+    """
+    return show_name.lower().replace('\'', '').replace('.', ' ').replace('  ', ' ').strip()
+
+
 def _get_torrents(show_name, season_number, episode_number, session):
     """
     Search Torrentleech for relevant torrents for the given episode.
@@ -68,12 +75,12 @@ def _get_torrents(show_name, season_number, episode_number, session):
     torrents_map = dict()
     logger.info('Searching torrents for {} - s{:02d}e{:02d}'.format(show_name, season_number, episode_number))
     # slugify a bit - URLs and guessit get sensitive about this stuff.
-    show_name = show_name.replace('\'', '').replace('.', ' ')
+    show_name = uglify_show_name(show_name)
     for quality in QUALITIES_LIST:
-        response = session.get(
-            TORRENTLEECH_BASE_URL + '/torrents/browse/index/query/{}+s{:02d}e{:02d}+{}/'
-                                    'facets/category%253ATV'.format(show_name.replace('\'', ''),
-                                                                    season_number, episode_number, quality))
+        search_url = TORRENTLEECH_BASE_URL + \
+                     '/torrents/browse/index/query/{}+s{:02d}e{:02d}+{}/facets/category%253ATV'.format(
+                        show_name.replace(' ', '%20'), season_number, episode_number, quality)
+        response = session.get(search_url)
         if response.status_code == 200:
             # Scrape that shit!
             parsed_response = BeautifulSoup(response.content, 'html.parser')
@@ -87,7 +94,7 @@ def _get_torrents(show_name, season_number, episode_number, session):
                     logger.debug('Found possible torrent: {}'.format(file_name))
                     # Verify with guessit.
                     guess = guessit(file_name)
-                    if guess['title'].lower() == show_name and guess['season'] == season_number and \
+                    if uglify_show_name(guess['title']) == show_name and guess['season'] == season_number and \
                             guess['episode'] == episode_number and guess['screen_size'] == quality:
                         # Calculate file size.
                         file_size_parts = sizes_list[index].split(' ')
@@ -100,6 +107,10 @@ def _get_torrents(show_name, season_number, episode_number, session):
                         }
                         logger.info('Found torrent for {} quality (size: {})'.format(quality, file_size))
                         break
+                    else:
+                        logger.info('Guess info didn\'t match: {}'.format(guess))
+            else:
+                logger.info('Found nothing for URL: {}'.format(search_url))
     return torrents_map
 
 
