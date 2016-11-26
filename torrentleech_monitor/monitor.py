@@ -94,8 +94,8 @@ def _get_torrents(show_name, season_number, episode_number, session):
                     logger.debug('Found possible torrent: {}'.format(file_name))
                     # Verify with guessit.
                     guess = guessit(file_name)
-                    if uglify_show_name(guess['title']) == show_name and guess['season'] == season_number and \
-                            guess['episode'] == episode_number and guess['screen_size'] == quality:
+                    if uglify_show_name(guess.get('title')) == show_name and guess.get('season') == season_number and \
+                            guess.get('episode') == episode_number and guess.get('screen_size') == quality:
                         # Calculate file size.
                         file_size_parts = sizes_list[index].split(' ')
                         file_size = float(file_size_parts[0]) * (1 if file_size_parts[1] == 'MB' else 1000)
