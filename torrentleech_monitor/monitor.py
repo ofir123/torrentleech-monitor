@@ -59,7 +59,8 @@ def uglify_show_name(show_name):
     """
     Returns an uglified string for the given show name.
     """
-    return show_name.lower().replace('\'', '').replace('.', ' ').replace('  ', ' ').strip()
+    return show_name.lower().replace('\'', '').replace('.', ' ').replace('  ', ' ').replace('!', '').\
+        replace(':', ' ').strip()
 
 
 def _get_torrents(show_name, season_number, episode_number, session):
