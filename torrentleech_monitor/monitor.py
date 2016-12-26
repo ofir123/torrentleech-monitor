@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from guessit import guessit
 import logbook
 import tvdb_api
-from tvdb_exceptions import tvdb_error, tvdb_shownotfound
+from tvdb_exceptions import tvdb_error, tvdb_shownotfound, tvdb_episodenotfound
 import requests
 import ujson
 
@@ -164,12 +164,17 @@ def _get_last_available_episode(show, show_name, show_last_state, session):
             logger.info('{} - no change since last state'.format(show_name))
             return last_state_episode
         # Try to find the newest available episode.
-        last_episode = last_season[last_episode_number]
-        last_episode_air_time = last_episode['firstaired']
-        if last_episode_air_time:
-            last_episode_air_time = datetime.datetime.strptime(last_episode_air_time, '%Y-%m-%d')
-            if last_episode_air_time <= today:
-                torrents_map = _get_torrents(show_name, last_season_number, last_episode_number, session)
+        try:
+            last_episode = last_season[last_episode_number]
+            last_episode_air_time = last_episode['firstaired']
+            if last_episode_air_time:
+                last_episode_air_time = datetime.datetime.strptime(last_episode_air_time, '%Y-%m-%d')
+                if last_episode_air_time <= today:
+                    torrents_map = _get_torrents(show_name, last_season_number, last_episode_number, session)
+        except tvdb_episodenotfound:
+            last_episode_air_time = None
+            logger.info('Episode {} in season {} not found. Skipping...'.format(
+                last_episode_number, last_season_number))
     # Return the new state JSON for the given show.
     return {
         'season': last_season_number,
