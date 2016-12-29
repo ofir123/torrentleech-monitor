@@ -103,7 +103,7 @@ def _get_torrents(show_name, season_number, episode_number, session):
                         # Add to map and move on to next quality.
                         torrents_map[quality] = {
                             'size': file_size,
-                            'url': TORRENTLEECH_BASE_URL + result,
+                            'url': result,
                             'downloaded': False
                         }
                         logger.info('Found torrent for {} quality (size: {})'.format(quality, file_size))
