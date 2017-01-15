@@ -115,12 +115,13 @@ def _get_torrents(show_name, season_number, episode_number, session):
     return torrents_map
 
 
-def _get_last_available_episode(show, show_name, show_last_state, session):
+def _get_last_available_episode(show, show_name, torrentleech_show_name, show_last_state, session):
     """
     Find the latest relevant (aired and available) episode for the given show.
 
     :param show: The TVDB show object.
     :param show_name: The show name.
+    :param torrentleech_show_name: The show name in Torrentleech.
     :param show_last_state: The last state JSON saved for the given show.
     :param session: The current Torrentleech session.
     :return: A JSON with the following details: season_number, episode_number, air_date and torrent_urls,
@@ -146,7 +147,7 @@ def _get_last_available_episode(show, show_name, show_last_state, session):
     if last_episode_air_time:
         last_episode_air_time = datetime.datetime.strptime(last_episode_air_time, '%Y-%m-%d')
         if last_episode_air_time <= today:
-            torrents_map = _get_torrents(show_name, last_season_number, last_episode_number, session)
+            torrents_map = _get_torrents(torrentleech_show_name, last_season_number, last_episode_number, session)
     # Go back until finding the last aired episode.
     while not last_episode_air_time or last_episode_air_time > today or len(torrents_map) == 0:
         last_episode_number -= 1
@@ -170,7 +171,8 @@ def _get_last_available_episode(show, show_name, show_last_state, session):
             if last_episode_air_time:
                 last_episode_air_time = datetime.datetime.strptime(last_episode_air_time, '%Y-%m-%d')
                 if last_episode_air_time <= today:
-                    torrents_map = _get_torrents(show_name, last_season_number, last_episode_number, session)
+                    torrents_map = _get_torrents(torrentleech_show_name, last_season_number, last_episode_number,
+                                                 session)
         except tvdb_episodenotfound:
             last_episode_air_time = None
             logger.info('Episode {} in season {} not found. Skipping...'.format(
@@ -198,7 +200,11 @@ def check_shows(last_state, session):
         logger.info('Connecting to TVDB...')
         tv = tvdb_api.Tvdb()
         for show_name in SHOWS_LIST:
-            show_name = show_name.lower()
+            if isinstance(show_name, tuple):
+                show_name, torrentleech_show_name = [n.lower() for n in show_name]
+            else:
+                show_name = show_name.lower()
+                torrentleech_show_name = show_name
             logger.info('Checking show: {}'.format(show_name))
             try:
                 # Load show information.
@@ -207,7 +213,8 @@ def check_shows(last_state, session):
                 show_last_state = last_state.get(show_name)
                 # No need to check anything if status is black-listed.
                 if status not in statuses_black_list:
-                    last_episode_info = _get_last_available_episode(show, show_name, show_last_state, session)
+                    last_episode_info = _get_last_available_episode(show, show_name, torrentleech_show_name,
+                                                                    show_last_state, session)
                     if last_episode_info:
                         logger.info('{} last available episode is: S{:02d}E{:02d} (aired: {})'.format(
                             show_name, last_episode_info['season'], last_episode_info['episode'],
