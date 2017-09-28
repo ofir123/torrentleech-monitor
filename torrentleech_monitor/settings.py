@@ -21,7 +21,7 @@ TORRENTLEECH_PASSWORD = 'password'
 # General settings.
 
 # If True, E-Mail reports will be sent.
-SHOULD_SEND_REPORT = True
+SHOULD_SEND_REPORT = False
 # If True, new episode torrents will be downloaded from TorrentLeech.
 SHOULD_DOWNLOAD_720_TORRENTS = True
 SHOULD_DOWNLOAD_1080_TORRENTS = True
@@ -37,3 +37,5 @@ STATUSES_BLACK_LIST = ['ended']
 LOG_FILE_PATH = None
 # JSON file path. If None, JSON will be created next to the script file.
 JSON_FILE_PATH = None
+# Sort torrents found during search by number of seeders
+SORT_BY_SEEDERS = True

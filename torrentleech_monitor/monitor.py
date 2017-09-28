@@ -8,14 +8,13 @@ from bs4 import BeautifulSoup
 from guessit import guessit
 import logbook
 import tvdb_api
-from tvdb_exceptions import tvdb_error, tvdb_shownotfound, tvdb_episodenotfound
 import requests
 import ujson
 
 from torrentleech_monitor.settings import LOG_FILE_PATH, JSON_FILE_PATH, GMAIL_USERNAME, GMAIL_PASSWORD, EMAILS_LIST, \
     SUBJECT, MESSAGE, STATUSES_BLACK_LIST, SHOULD_SEND_REPORT, SHOULD_DOWNLOAD_720_TORRENTS, \
     SHOULD_DOWNLOAD_1080_TORRENTS, TORRENTLEECH_USERNAME, TORRENTLEECH_PASSWORD, TORRENTS_DIRECTORY, \
-    MAXIMUM_TORRENT_DAYS, MINIMUM_FREE_SPACE
+    MAXIMUM_TORRENT_DAYS, MINIMUM_FREE_SPACE, SORT_BY_SEEDERS
 from torrentleech_monitor.shows import SHOWS_LIST
 
 NOT_FOUND_STATUS = 'not found'
@@ -63,6 +62,10 @@ def uglify_show_name(show_name):
         replace(':', ' ').strip()
 
 
+def sort_by_seeders(download_links, seeders):
+    return [l[0] for l in sorted(list(zip(download_links, map(int, seeders))), reverse=True, key=lambda x: x[1])]
+
+
 def _get_torrents(show_name, season_number, episode_number, session):
     """
     Search Torrentleech for relevant torrents for the given episode.
@@ -90,6 +93,9 @@ def _get_torrents(show_name, season_number, episode_number, session):
                 results_list = [t.find('a')['href'] for t in table.find_all('td', 'quickdownload')]
                 sizes_list = [t.string for t in table.find_all('td') if t.string and
                               ('GB' in t.string or 'MB' in t.string)]
+                seeders_list = [t.get_text() for t in table.find_all('td', 'seeders')]
+                if SORT_BY_SEEDERS:
+                    results_list = sort_by_seeders(results_list, seeders_list)
                 for index, result in enumerate(results_list):
                     file_name = result.split('/')[-1]
                     logger.debug('Found possible torrent: {}'.format(file_name))
@@ -173,7 +179,7 @@ def _get_last_available_episode(show, show_name, torrentleech_show_name, show_la
                 if last_episode_air_time <= today:
                     torrents_map = _get_torrents(torrentleech_show_name, last_season_number, last_episode_number,
                                                  session)
-        except tvdb_episodenotfound:
+        except tvdb_api.tvdb_episodenotfound:
             last_episode_air_time = None
             logger.info('Episode {} in season {} not found. Skipping...'.format(
                 last_episode_number, last_season_number))
@@ -229,13 +235,13 @@ def check_shows(last_state, session):
                     'status': status,
                     'last_episode_info': last_episode_info
                 }
-            except tvdb_shownotfound:
+            except tvdb_api.tvdb_shownotfound:
                 logger.error('Couldn\'t find show: {}. Skipping...'.format(show_name))
                 last_episodes_map[show_name] = {
                     'status': NOT_FOUND_STATUS,
                     'last_episode_info': None
                 }
-    except tvdb_error:
+    except tvdb_api.tvdb_error:
         logger.exception('Couldn\'t connect to TVDB')
     return last_episodes_map
 
