@@ -63,7 +63,7 @@ def uglify_show_name(show_name):
 
 
 def sort_by_seeders(download_links, seeders):
-    return [l[0] for l in sorted(list(zip(download_links, map(int, seeders))), reverse=True, key=lambda x: x[1])]
+    return [l[0] for l in sorted(list(zip(download_links, seeders)), reverse=True, key=lambda x: x[1])]
 
 
 def _get_torrents(show_name, season_number, episode_number, session):
@@ -93,7 +93,7 @@ def _get_torrents(show_name, season_number, episode_number, session):
                 results_list = [t.find('a')['href'] for t in table.find_all('td', 'quickdownload')]
                 sizes_list = [t.string for t in table.find_all('td') if t.string and
                               ('GB' in t.string or 'MB' in t.string)]
-                seeders_list = [t.get_text() for t in table.find_all('td', 'seeders')]
+                seeders_list = [int(t.get_text()) for t in table.find_all('td', 'seeders')]
                 if SORT_BY_SEEDERS:
                     results_list = sort_by_seeders(results_list, seeders_list)
                 for index, result in enumerate(results_list):
