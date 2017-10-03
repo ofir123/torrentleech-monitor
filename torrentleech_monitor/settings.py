@@ -37,3 +37,5 @@ STATUSES_BLACK_LIST = ['ended']
 LOG_FILE_PATH = None
 # JSON file path. If None, JSON will be created next to the script file.
 JSON_FILE_PATH = None
+# Sort torrents found during search by number of seeders
+SORT_BY_SEEDERS = True
