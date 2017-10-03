@@ -21,7 +21,7 @@ TORRENTLEECH_PASSWORD = 'password'
 # General settings.
 
 # If True, E-Mail reports will be sent.
-SHOULD_SEND_REPORT = False
+SHOULD_SEND_REPORT = True
 # If True, new episode torrents will be downloaded from TorrentLeech.
 SHOULD_DOWNLOAD_720_TORRENTS = True
 SHOULD_DOWNLOAD_1080_TORRENTS = True
